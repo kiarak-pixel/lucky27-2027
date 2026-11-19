@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#0d0b0c">
+<title>Mission Lucky27 · Casino Royale</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,wght@0,500;0,700;1,500&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0d0b0c;
+    --felt: #16110f;
+    --smoke: #2a2124;
+    --burgundy: #8a1429;
+    --burgundy-deep: #5a0c1b;
+    --gold: #c9a24b;
+    --gold-soft: #e3c77f;
+    --ivory: #efe6d2;
+    --mute: #a99f8c;
+    --ok: #7fb685;
+    --bad: #e06a6a;
+    --display: "Bodoni Moda", "Didot", "Bodoni 72", Georgia, serif;
+    --body: "Jost", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  *, *::before, *::after { box-sizing: inherit; }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background:
+      radial-gradient(120% 70% at 50% -10%, #2b1118 0%, transparent 60%),
+      var(--ink);
+    color: var(--ivory);
+    font-family: var(--body);
+    font-size: 17px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  main { max-width: 560px; margin: 0 auto; padding: 28px 20px 64px; }
+  h1, h2 { font-family: var(--display); font-weight: 700; margin: 0; line-height: 1.05; }
+  h1 { font-size: clamp(44px, 12vw, 68px); letter-spacing: -0.01em; }
+  h2 { font-size: clamp(28px, 7vw, 36px); }
+  p { margin: 0 0 14px; }
+  .hidden { display: none !important; }
+
+  /* Karten-Leiste */
+  .rail { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; margin: 8px 0 28px; perspective: 800px; }
+  .pcard { aspect-ratio: 5 / 7; position: relative; transform-style: preserve-3d; transition: transform .7s cubic-bezier(.3,.7,.2,1); }
+  .pcard.flipped { transform: rotateY(180deg); }
+  .pcard .face, .pcard .back {
+    position: absolute; inset: 0; border-radius: 8px; backface-visibility: hidden; -webkit-backface-visibility: hidden;
+    display: grid; place-items: center;
+  }
+  .pcard .back {
+    background:
+      repeating-linear-gradient(45deg, rgba(201,162,75,.22) 0 2px, transparent 2px 9px),
+      repeating-linear-gradient(-45deg, rgba(201,162,75,.22) 0 2px, transparent 2px 9px),
+      var(--burgundy-deep);
+    border: 1.5px solid var(--gold);
+    color: var(--gold); font-size: 22px;
+  }
+  .pcard .face {
+    transform: rotateY(180deg);
+    background: var(--ivory); color: var(--burgundy);
+    font-family: var(--display); font-weight: 700; font-size: clamp(26px, 8vw, 40px);
+    border: 1.5px solid var(--gold);
+  }
+  .pcard.current .back { box-shadow: 0 0 0 2px var(--gold-soft), 0 0 22px rgba(227,199,127,.35); }
+
+  /* Panel */
+  .panel {
+    background: linear-gradient(180deg, var(--smoke), var(--felt));
+    border: 1px solid rgba(201,162,75,.45);
+    border-radius: 14px;
+    padding: 24px 22px 26px;
+  }
+  .panel h2 { margin-bottom: 10px; }
+  .meta { color: var(--mute); font-size: 15px; margin-bottom: 18px; }
+  .puzzle {
+    font-family: var(--display); font-size: clamp(26px, 8vw, 38px); text-align: center;
+    color: var(--gold-soft); padding: 18px 8px; margin: 6px 0 18px;
+    border-top: 1px solid rgba(201,162,75,.4); border-bottom: 1px solid rgba(201,162,75,.4);
+    letter-spacing: .06em; word-break: break-word;
+  }
+  .puzzle.big { font-size: clamp(38px, 12vw, 58px); letter-spacing: .14em; line-height: 1.3; }
+  label { display: block; font-weight: 500; margin-bottom: 8px; }
+  input[type=text] {
+    width: 100%; background: #0d0b0c; color: var(--ivory);
+    border: 1.5px solid rgba(201,162,75,.55); border-radius: 10px;
+    font: inherit; font-size: 18px; padding: 13px 14px;
+  }
+  input[type=text]::placeholder { color: #6f6757; }
+  button {
+    font: inherit; font-weight: 600; cursor: pointer; border-radius: 10px;
+    padding: 13px 20px; border: 1.5px solid var(--gold); transition: transform .12s, background .2s;
+  }
+  button:active { transform: scale(.97); }
+  .primary { background: var(--burgundy); color: var(--ivory); width: 100%; margin-top: 14px; }
+  .primary:hover { background: #a21a33; }
+  .ghost { background: transparent; color: var(--gold-soft); font-size: 15px; padding: 9px 14px; margin-top: 12px; }
+  .ghost:hover { background: rgba(201,162,75,.12); }
+  :focus-visible { outline: 3px solid var(--gold-soft); outline-offset: 2px; }
+
+  .options { display: grid; gap: 10px; margin-top: 6px; }
+  .opt {
+    text-align: left; background: #0d0b0c; color: var(--ivory);
+    border: 1.5px solid rgba(201,162,75,.4); font-weight: 500;
+  }
+  .opt:hover:not(:disabled) { border-color: var(--gold-soft); background: #1b1416; }
+  .opt.right { border-color: var(--ok); background: rgba(127,182,133,.15); }
+  .opt.wrong { border-color: var(--bad); background: rgba(224,106,106,.14); }
+  .opt:disabled { cursor: default; }
+
+  .msg { min-height: 24px; margin-top: 12px; font-weight: 500; }
+  .msg.bad { color: var(--bad); }
+  .msg.ok { color: var(--ok); }
+  .hintbox { color: var(--gold-soft); font-style: italic; margin-top: 10px; }
+  .shake { animation: shake .4s; }
+  @keyframes shake { 20%{transform:translateX(-7px)} 40%{transform:translateX(7px)} 60%{transform:translateX(-4px)} 80%{transform:translateX(4px)} }
+
+  .status { display: flex; justify-content: space-between; font-size: 15px; color: var(--mute); margin-bottom: 14px; }
+  .status b { color: var(--gold-soft); font-weight: 600; }
+
+  /* Intro */
+  .hero { text-align: center; padding: 28px 0 8px; }
+  .hero .suit { color: var(--gold); font-size: 30px; letter-spacing: .5em; margin-bottom: 8px; }
+  .hero .sub { color: var(--gold-soft); font-family: var(--display); font-style: italic; font-size: 22px; margin-top: 10px; }
+  .hero p.lead { color: var(--mute); margin: 22px auto 26px; max-width: 420px; }
+
+  /* Ticket */
+  .ticket {
+    background: var(--ivory); color: #1c1416; border-radius: 14px; padding: 26px 22px 22px;
+    border: 2px solid var(--gold); position: relative; text-align: center;
+  }
+  .ticket::before, .ticket::after {
+    content: ""; position: absolute; top: 58%; width: 26px; height: 26px; border-radius: 50%; background: var(--ink);
+    border: 2px solid var(--gold);
+  }
+  .ticket::before { left: -15px; clip-path: inset(0 0 0 50%); }
+  .ticket::after { right: -15px; clip-path: inset(0 50% 0 0); }
+  .ticket h2 { color: var(--burgundy); }
+  .ticket .rank { font-family: var(--display); font-style: italic; font-size: 22px; margin: 6px 0 16px; }
+  .ticket dl { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 14px; text-align: left; margin: 18px 0 0; padding-top: 18px; border-top: 2px dashed rgba(138,20,41,.4); }
+  .ticket dt { color: #6d5c52; font-size: 14px; }
+  .ticket dd { margin: 0; font-weight: 600; text-align: right; }
+  .ticket .code { font-family: var(--display); font-size: 34px; letter-spacing: .3em; color: var(--burgundy); margin-top: 6px; }
+
+  footer { text-align: center; color: var(--mute); font-size: 14px; margin-top: 34px; font-family: var(--display); font-style: italic; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pcard { transition: none; }
+    .shake { animation: none; }
+  }
+</style>
+</head>
+<body>
+<main>
+
+  <!-- INTRO -->
+  <section id="intro" class="hero">
+    <div class="suit" aria-hidden="true">♠ ♥ ♣ ♦</div>
+    <h1>Mission<br>Lucky27</h1>
+    <div class="sub">Streng vertraulich.</div>
+    <p class="lead">Agent, sechs Prüfungen trennen dich von der Tür. Knack sie, decke sechs Karten auf und setz daraus das Passwort für den Abend zusammen. Jeder Fehler kostet Chips. Wer Kiks wirklich kennt, spart sich welche. Alle anderen zahlen drauf.</p>
+    <div class="panel" style="text-align:left">
+      <label for="agentName">Dein Name, Agent</label>
+      <input type="text" id="agentName" autocomplete="given-name" maxlength="30" placeholder="Name eintragen">
+      <div class="msg bad" id="introMsg" role="alert"></div>
+      <button class="primary" id="startBtn">Akte öffnen</button>
+    </div>
+  </section>
+
+  <!-- GAME -->
+  <section id="game" class="hidden">
+    <div class="rail" id="rail" aria-label="Fortschritt"></div>
+    <div class="status"><span>Agent <b id="stName"></b></span><span>Chips <b id="stChips"></b></span></div>
+    <div class="panel" id="panel" aria-live="polite"></div>
+  </section>
+
+  <!-- FINAL -->
+  <section id="final" class="hidden">
+    <div class="rail" id="rail2" aria-label="Aufgedeckte Karten"></div>
+    <div class="status"><span>Agent <b id="stName2"></b></span><span>Chips <b id="stChips2"></b></span></div>
+    <div class="panel" id="finalPanel">
+      <h2>Alle Karten liegen offen.</h2>
+      <p class="meta">Lies sie von links nach rechts. Wie lautet das Passwort?</p>
+      <label for="passInput">Passwort</label>
+      <input type="text" id="passInput" autocomplete="off" autocapitalize="characters" placeholder="Sechs Buchstaben">
+      <div class="msg" id="passMsg" role="alert"></div>
+      <button class="primary" id="passBtn">Tresor öffnen</button>
+    </div>
+  </section>
+
+  <!-- DONE -->
+  <section id="done" class="hidden">
+    <div class="ticket">
+      <h2>Akte geöffnet</h2>
+      <div class="rank" id="rankText"></div>
+      <div class="meta" style="color:#6d5c52;margin:0">Dein Passwort für die Tür</div>
+      <div class="code" id="codeText"></div>
+      <dl>
+        <dt>Agent</dt><dd id="dName"></dd>
+        <dt>Lucky-Wissen</dt><dd id="dKnow"></dd>
+        <dt>Chips</dt><dd id="dChips"></dd>
+        <dt>Zeit</dt><dd id="dTime"></dd>
+      </dl>
+    </div>
+    <button class="primary" id="waBtn">Ergebnis an Lucky melden</button>
+    <p class="meta" style="text-align:center;margin-top:14px">Das öffnet WhatsApp mit einer fertigen Nachricht. Am Eingang nennst du das Passwort.</p>
+    <div style="text-align:center"><button class="ghost" id="resetBtn">Nochmal von vorn</button></div>
+  </section>
+
+  <footer>Das Haus gewinnt immer. Heute Abend nicht.</footer>
+</main>
+
+<script>
+/* ==========================================================
+   EINSTELLUNGEN – hier anpassen
+   ========================================================== */
+const CONFIG = {
+  host: "Kiks",               // Name des Geburtstagskinds in den Texten
+  whatsapp: "",               // Deine Nummer ohne + und Leerzeichen, z. B. "4915112345678". Leer = Kontakt frei wählbar.
+  password: "ROYALE",         // Passwort an der Tür (muss zu den 6 Buchstaben der Stationen passen)
+  startChips: 2700,
+  penaltyWrong: 100,          // Abzug pro falschem Versuch
+  penaltyHint: 200            // Abzug pro Tipp
+};
+
+/* ==========================================================
+   STATIONEN
+   type "quiz": Fragen über das Geburtstagskind (kein zweiter Versuch)
+   type "text": Rätsel mit Texteingabe
+   TODO: Quiz-Fragen unten durch echte Fragen und die richtige Antwort (correct = Index ab 0) ersetzen
+   ========================================================== */
+const STAGES = [
+  {
+    type: "quiz", letter: "R", title: "Das Dossier",
+    intro: "Erste Prüfung. Wie gut kennst du " + CONFIG.host + " wirklich? Hier gibt es keine zweite Chance.",
+    questions: [
+      { q: "Was bestellt " + CONFIG.host + " am liebsten, wenn Comfort Food gegen den Kater gebraucht wird?", options: ["Pizza", "Ramen", "Sushi", "Pasta"], correct: 0 },
+      { q: "Auf einem normalen Würfel ergeben gegenüberliegende Seiten immer 7. Oben liegt die 2. Wie viele Punkte liegen unten?", options: ["3", "4", "5", "6"], correct: 2, scored: false, tag: "Escape-Rätsel" },
+      /* TODO: richtige Antwort bestätigen (correct = Index ab 0) */
+      { q: "Was bestellt " + CONFIG.host + " an der Bar, wenn es richtig klasse werden soll?", options: ["Whiskey Sour", "Aperol Sour", "Basil Smash", "Espresso Martini"], correct: 3 }
+    ]
+  },
+  {
+    type: "text", letter: "O", title: "Der Funkspruch",
+    intro: "Abgefangen. Jemand hat jeden Buchstaben um einen Schritt im Alphabet verschoben. Wie lautet das Originalwort?",
+    puzzle: "KBDLQPU",
+    answers: ["jackpot"],
+    hint: "Aus dem K wird ein J. Geh bei jedem Buchstaben einen Schritt zurück."
+  },
+  {
+    type: "text", letter: "Y", title: "Die Bildersprache",
+    intro: "Der Gegner kommuniziert nur noch in Symbolen. Drei Rätsel: zwei Filme und ein Bösewicht.",
+    rounds: [
+      { prompt: "Welcher Film versteckt sich hier?", puzzle: "🐀 👨‍🍳 🇫🇷", big: true, answers: ["ratatouille", "ratatui"], hint: "Eine Ratte kocht in Paris." },
+      { prompt: "Wer ist gemeint?", puzzle: "🃏 🤡", big: true, answers: ["joker", "derjoker"], hint: "Batmans Lieblingsgegner. Und eine Karte." },
+      { prompt: "Welcher Bond-Film versteckt sich hier?", puzzle: "⌚ 🚫 ☠️", big: true, answers: ["keinezeitzusterben", "notimetodie", "keinezeit"], hint: "Daniel Craigs letzter Auftritt als 007. Der Titel ist ein Befehl an die Uhr." }
+    ]
+  },
+  {
+    type: "quiz", letter: "A", title: "Das Verhör",
+    intro: "Zweite Runde. Lass dich nicht von den falschen Antworten verführen.",
+    questions: [
+      { q: "Was würde " + CONFIG.host + " niemals freiwillig essen?", options: ["Gebackene Bananen", "Spaghetti Carbonara", "Cacio e Pepe", "Pasta alla Vodka"], correct: 2 },
+      { q: "Die größte Macke von " + CONFIG.host + " (eine von vielen)?", options: ["Unpünktlich", "Antwortet nie auf Nachrichten", "Isst von deinem Teller, ohne zu fragen", "Kann nicht Nein sagen"], correct: 0 },
+      /* TODO: viertes Lieblingswort und richtige Antwort eintragen */
+      { q: "Das Lieblingswort von " + CONFIG.host + "?", options: ["Wild", "Checke", "Safe", "Läuft"], correct: 0 }
+    ]
+  },
+  {
+    type: "text", letter: "L", title: "Wer bin ich?",
+    intro: "Ich bin das, was Kiks schreibt, wenn sie „Bin gleich da“ tippt und noch im Bett liegt. Man sagt, ich hätte kurze Beine, und trotzdem komme ich ziemlich weit. Pinocchio trägt mich mitten im Gesicht. Wer bin ich?",
+    puzzle: "🤥 🦵",
+    answers: ["luege", "dieluege", "luge", "bluff", "derbluff"],
+    hint: "Vier Buchstaben. Pinocchios Nase verrät sie."
+  },
+  {
+    type: "safe", letter: "E", title: "Der Tresor", code: "245", roundLabel: "Challenge",
+    intro: "Letzte Hürde. Der Tresor hat einen dreistelligen Code. Jede der drei Mini-Challenges liefert dir eine Ziffer. Merk sie dir gut, der Tresor fragt nur einmal.",
+    rounds: [
+      { prompt: "Zwei Künstlerinnen, ein Unterschied. Die eine ist die Königin des Pop und trägt als Künstlernamen den Titel, mit dem man die Mutter Jesu auf Gemälden nennt. Die andere malte vor allem sich selbst, mit durchgehender Augenbraue, weil sie, wie sie sagte, die Person war, die sie am besten kannte. Um wie viele Buchstaben ist der Name der Pop-Königin länger als der Vorname der Malerin?", puzzle: "👑 🎤 − 🎨 🖌️", big: true, answers: ["2", "zwei"], digit: 2, hint: "Die Malerin ist Frida Kahlo. Die Sängerin trägt den Namen einer Marien-Darstellung, mit M am Anfang." },
+      { prompt: "Jemand hat Kiks’ letzten Espresso Martini ausgetrunken. Drei Verdächtige, aber nur eine der drei sagt die Wahrheit. Jule: „Mia war’s.“ Mia: „Jule lügt.“ Lena: „Ich war’s nicht.“ Wie viele Buchstaben hat der Name der Täterin?", puzzle: "🍸 🕵️ ❓", big: true, answers: ["4", "vier", "lena"], digit: 4, hint: "Probier jede als Täterin durch. Bei zwei der drei Fälle würden zwei Personen die Wahrheit sagen." },
+      { prompt: "Kiks und drei Freundinnen wollen anstoßen, jede mit jeder genau einmal. Zwei von ihnen reden seit der letzten Party nicht mehr miteinander und stoßen auf gar keinen Fall an. Wie oft klirrt es insgesamt?", puzzle: "🥂 🥂 🥂 🥂 🙄", big: true, answers: ["5", "fuenf"], digit: 5, hint: "Vier Personen ergeben sechs mögliche Paare. Eins davon fällt aus." }
+    ]
+  }
+];
+
+const RANKS = [
+  [5, "Doppelagent. Du kennst " + CONFIG.host + " besser als " + CONFIG.host + " sich selbst."],
+  [4, "Engster Vertrauter. Du weißt zu viel."],
+  [2, "Gute Bekanntschaft. Mehr nicht."],
+  [0, "Verdächtige Person. Wer hat dich eigentlich eingeladen?"]
+];
+
+const WRONG = [
+  "Falsch. Das Haus bedankt sich für deine Chips.",
+  "Nope. Nicht mal nach drei Drinks wäre das richtig.",
+  "Daneben. Kiks wäre enttäuscht.",
+  "Autsch. Das tat beim Zusehen weh.",
+  "Falsch. Aber du siehst dabei gut aus."
+];
+const RIGHT = ["Richtig. Du Streber.", "Sitzt.", "Gut. Fast verdächtig gut.", "Treffer."];
+const pick = a => a[Math.floor(Math.random() * a.length)];
+
+/* ==========================================================
+   LOGIK
+   ========================================================== */
+const $ = id => document.getElementById(id);
+const norm = s => s.toLowerCase().replace(/ä/g,"ae").replace(/ö/g,"oe").replace(/ü/g,"ue").replace(/ß/g,"ss").replace(/[\s.,;:!?'’"„“-]/g, "");
+const fmtTime = ms => { const s = Math.round(ms / 1000); return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0"); };
+const STORE = "lucky27-mission";
+
+let S = fresh();
+function fresh() {
+  return { name: "", stage: 0, chips: CONFIG.startChips, know: 0, start: 0, end: 0, done: false, hint: false, q: 0, r: 0, digits: [], reveal: null };
+}
+function save() { try { localStorage.setItem(STORE, JSON.stringify(S)); } catch (e) {} }
+function load() {
+  try { const raw = localStorage.getItem(STORE); if (raw) return JSON.parse(raw); } catch (e) {}
+  return null;
+}
+
+function show(id) {
+  ["intro", "game", "final", "done"].forEach(x => $(x).classList.toggle("hidden", x !== id));
+  window.scrollTo({ top: 0 });
+}
+
+function buildRail(target) {
+  target.innerHTML = "";
+  STAGES.forEach((st, i) => {
+    const c = document.createElement("div");
+    c.className = "pcard" + (i < S.stage ? " flipped" : "") + (i === S.stage ? " current" : "");
+    c.innerHTML = '<div class="back" aria-hidden="true">♠</div><div class="face"></div>';
+    c.querySelector(".face").textContent = st.letter;
+    c.setAttribute("aria-label", i < S.stage ? "Karte " + st.letter : "Verdeckte Karte");
+    target.appendChild(c);
+  });
+}
+function updateStatus() {
+  ["stName", "stName2"].forEach(i => $(i).textContent = S.name);
+  ["stChips", "stChips2"].forEach(i => $(i).textContent = S.chips);
+}
+function shake(el) { el.classList.remove("shake"); void el.offsetWidth; el.classList.add("shake"); }
+
+function renderStage() {
+  buildRail($("rail"));
+  updateStatus();
+  const st = STAGES[S.stage];
+  const p = $("panel");
+  p.innerHTML = "";
+  const h = document.createElement("h2"); h.textContent = st.title; p.appendChild(h);
+  const intro = document.createElement("p"); intro.className = "meta"; intro.textContent = st.intro; p.appendChild(intro);
+  if (st.type === "quiz") renderQuiz(st, p);
+  else if (st.type === "safe" && S.reveal !== null) renderReveal(st, p);
+  else if (st.type === "safe" && S.r >= st.rounds.length) renderCode(st, p);
+  else renderText(st, p);
+}
+
+function renderQuiz(st, p) {
+  const q = st.questions[S.q];
+  const box = document.createElement("div");
+  const qn = document.createElement("p");
+  qn.style.fontWeight = "600";
+  qn.textContent = "Frage " + (S.q + 1) + " von " + st.questions.length + (q.tag ? " (" + q.tag + ")" : "") + ": " + q.q;
+  box.appendChild(qn);
+  const opts = document.createElement("div"); opts.className = "options";
+  const next = document.createElement("button");
+  next.className = "primary hidden";
+  next.textContent = S.q < st.questions.length - 1 ? "Nächste Frage" : "Karte aufdecken";
+  const snark = document.createElement("div"); snark.className = "msg"; snark.setAttribute("role", "status");
+  q.options.forEach((o, i) => {
+    const b = document.createElement("button");
+    b.className = "opt"; b.textContent = o;
+    b.addEventListener("click", () => {
+      [...opts.children].forEach(x => x.disabled = true);
+      if (i === q.correct) { b.classList.add("right"); if (q.scored !== false) S.know++; snark.className = "msg ok"; snark.textContent = pick(RIGHT); }
+      else {
+        b.classList.add("wrong"); opts.children[q.correct].classList.add("right"); snark.className = "msg bad"; snark.textContent = pick(WRONG);
+        S.chips = Math.max(0, S.chips - CONFIG.penaltyWrong * 1.5); updateStatus();
+      }
+      save();
+      next.classList.remove("hidden");
+      next.focus();
+    });
+    opts.appendChild(b);
+  });
+  next.addEventListener("click", () => {
+    if (S.q < st.questions.length - 1) { S.q++; save(); renderStage(); }
+    else solved(st);
+  });
+  box.appendChild(opts); box.appendChild(snark); box.appendChild(next);
+  p.appendChild(box);
+}
+
+function renderText(st, p) {
+  const round = st.rounds ? st.rounds[S.r] : st;
+  if (st.rounds) {
+    const rc = document.createElement("p"); rc.className = "meta"; rc.style.fontWeight = "600";
+    rc.textContent = (st.roundLabel || "Rätsel") + " " + (S.r + 1) + " von " + st.rounds.length; p.appendChild(rc);
+  }
+  if (round.prompt) { const pr = document.createElement("p"); pr.textContent = round.prompt; p.appendChild(pr); }
+  const pz = document.createElement("div"); pz.className = "puzzle" + (round.big ? " big" : ""); pz.textContent = round.puzzle; p.appendChild(pz);
+  const lab = document.createElement("label"); lab.htmlFor = "ans"; lab.textContent = "Deine Antwort"; p.appendChild(lab);
+  const inp = document.createElement("input"); inp.type = "text"; inp.id = "ans"; inp.autocomplete = "off"; p.appendChild(inp);
+  const msg = document.createElement("div"); msg.className = "msg"; msg.setAttribute("role", "alert"); p.appendChild(msg);
+  const hintBox = document.createElement("div"); hintBox.className = "hintbox"; p.appendChild(hintBox);
+  const go = document.createElement("button"); go.className = "primary"; go.textContent = "Antwort prüfen"; p.appendChild(go);
+  const hb = document.createElement("button"); hb.className = "ghost";
+  hb.textContent = "Tipp holen (−" + CONFIG.penaltyHint + " Chips)"; p.appendChild(hb);
+
+  const check = () => {
+    const v = norm(inp.value);
+    if (!v) { msg.className = "msg bad"; msg.textContent = "Trag erst eine Antwort ein."; return; }
+    if (round.answers.map(norm).includes(v)) {
+      if (st.type === "safe") { S.digits.push(round.digit); S.r++; S.reveal = round.digit; S.hint = false; save(); renderStage(); }
+      else if (st.rounds && S.r < st.rounds.length - 1) { S.r++; S.hint = false; save(); renderStage(); }
+      else solved(st);
+    } else {
+      S.chips = Math.max(0, S.chips - CONFIG.penaltyWrong); updateStatus(); save();
+      msg.className = "msg bad"; msg.textContent = pick(WRONG) + " (−" + CONFIG.penaltyWrong + " Chips)";
+      shake(inp); inp.select();
+    }
+  };
+  go.addEventListener("click", check);
+  inp.addEventListener("keydown", e => { if (e.key === "Enter") check(); });
+  hb.addEventListener("click", () => {
+    if (!S.hint) { S.chips = Math.max(0, S.chips - CONFIG.penaltyHint); S.hint = true; updateStatus(); save(); }
+    hintBox.textContent = "Tipp: " + round.hint;
+  });
+  if (S.hint) hintBox.textContent = "Tipp: " + round.hint;
+}
+
+function renderReveal(st, p) {
+  p.innerHTML = "";
+  const h = document.createElement("h2"); h.textContent = "Ziffer " + S.digits.length + " geknackt"; p.appendChild(h);
+  const pz = document.createElement("div"); pz.className = "puzzle big"; pz.textContent = S.reveal; p.appendChild(pz);
+  const t = document.createElement("p"); t.className = "meta";
+  t.textContent = S.digits.length < st.rounds.length ? "Merk dir die Zahl. " + (st.rounds.length - S.digits.length) + " Ziffer" + (st.rounds.length - S.digits.length === 1 ? "" : "n") + " fehlen noch." : "Das war die dritte Ziffer. Jetzt der Tresor.";
+  p.appendChild(t);
+  const b = document.createElement("button"); b.className = "primary";
+  b.textContent = S.digits.length < st.rounds.length ? "Nächste Challenge" : "Zum Tresor";
+  b.addEventListener("click", () => { S.reveal = null; save(); renderStage(); });
+  p.appendChild(b); b.focus();
+}
+
+function renderCode(st, p) {
+  p.innerHTML = "";
+  const h = document.createElement("h2"); h.textContent = "Der Tresor"; p.appendChild(h);
+  const t = document.createElement("p"); t.className = "meta"; t.textContent = "Drei Ziffern, in der Reihenfolge, in der du sie geknackt hast."; p.appendChild(t);
+  const pz = document.createElement("div"); pz.className = "puzzle big"; pz.textContent = "▢ ▢ ▢"; p.appendChild(pz);
+  const lab = document.createElement("label"); lab.htmlFor = "code"; lab.textContent = "Tresor-Code"; p.appendChild(lab);
+  const inp = document.createElement("input"); inp.type = "text"; inp.id = "code"; inp.inputMode = "numeric"; inp.maxLength = 3; inp.autocomplete = "off"; inp.placeholder = "3 Ziffern"; p.appendChild(inp);
+  const msg = document.createElement("div"); msg.className = "msg"; msg.setAttribute("role", "alert"); p.appendChild(msg);
+  const hintBox = document.createElement("div"); hintBox.className = "hintbox"; p.appendChild(hintBox);
+  const go = document.createElement("button"); go.className = "primary"; go.textContent = "Tresor öffnen"; p.appendChild(go);
+  const hb = document.createElement("button"); hb.className = "ghost";
+  hb.textContent = "Code vergessen? (−" + CONFIG.penaltyHint + " Chips)"; p.appendChild(hb);
+  const check = () => {
+    if (inp.value.trim() === st.code) { solved(st); return; }
+    S.chips = Math.max(0, S.chips - CONFIG.penaltyWrong); updateStatus(); save();
+    msg.className = "msg bad"; msg.textContent = "Der Tresor bleibt zu. (−" + CONFIG.penaltyWrong + " Chips)";
+    shake(inp); inp.select();
+  };
+  go.addEventListener("click", check);
+  inp.addEventListener("keydown", e => { if (e.key === "Enter") check(); });
+  hb.addEventListener("click", () => {
+    if (!S.hint) { S.chips = Math.max(0, S.chips - CONFIG.penaltyHint); S.hint = true; updateStatus(); save(); }
+    hintBox.textContent = "Dein Code: " + S.digits.join(" ");
+  });
+  if (S.hint) hintBox.textContent = "Dein Code: " + S.digits.join(" ");
+}
+
+function solved(st) {
+  S.stage++; S.q = 0; S.r = 0; S.hint = false; S.reveal = null; S.digits = []; save();
+  buildRail($("rail"));
+  // Rail neu aufbauen setzt die Karte direkt auf "flipped"; Animation per Frame-Trick
+  const cards = $("rail").children;
+  const c = cards[S.stage - 1];
+  c.classList.remove("flipped");
+  void c.offsetWidth;
+  requestAnimationFrame(() => c.classList.add("flipped"));
+  const p = $("panel"); p.innerHTML = "";
+  const h = document.createElement("h2"); h.textContent = "Karte aufgedeckt: " + st.letter; p.appendChild(h);
+  const t = document.createElement("p"); t.className = "meta";
+  t.textContent = S.stage < STAGES.length ? "Merk dir den Buchstaben. " + (STAGES.length - S.stage) + " Prüfung" + (STAGES.length - S.stage === 1 ? "" : "en") + " fehlen noch." : "Das war die letzte Prüfung.";
+  p.appendChild(t);
+  const b = document.createElement("button"); b.className = "primary";
+  b.textContent = S.stage < STAGES.length ? "Nächste Prüfung" : "Zum Tresor";
+  b.addEventListener("click", () => { if (S.stage < STAGES.length) renderStage(); else toFinal(); });
+  p.appendChild(b);
+  updateStatus();
+  b.focus();
+}
+
+function toFinal() {
+  buildRail($("rail2")); updateStatus(); show("final");
+  $("passInput").value = ""; $("passMsg").textContent = "";
+}
+
+function checkPass() {
+  const v = norm($("passInput").value);
+  if (v === norm(CONFIG.password)) {
+    S.done = true; S.end = Date.now(); save(); toDone();
+  } else {
+    const m = $("passMsg"); m.className = "msg bad";
+    m.textContent = "Falsches Passwort. Die Karten liest man von links nach rechts.";
+    S.chips = Math.max(0, S.chips - CONFIG.penaltyWrong); updateStatus(); save();
+    shake($("passInput"));
+  }
+}
+
+function rankFor(k) { return RANKS.find(r => k >= r[0])[1]; }
+const totalQ = STAGES.filter(s => s.type === "quiz").reduce((a, s) => a + s.questions.filter(q => q.scored !== false).length, 0);
+
+function toDone() {
+  show("done");
+  $("rankText").textContent = rankFor(S.know);
+  $("codeText").textContent = CONFIG.password;
+  $("dName").textContent = S.name;
+  $("dKnow").textContent = S.know + " von " + totalQ;
+  $("dChips").textContent = S.chips;
+  $("dTime").textContent = fmtTime(S.end - S.start);
+}
+
+function sendWhatsApp() {
+  const msg = "🎰 Agent " + S.name + " meldet: Akte Lucky27 geöffnet.\n" +
+    "Lucky-Wissen: " + S.know + "/" + totalQ + "\n" +
+    "Chips: " + S.chips + "\n" +
+    "Zeit: " + fmtTime(S.end - S.start) + "\n" +
+    "Passwort: " + CONFIG.password;
+  const base = CONFIG.whatsapp ? "https://wa.me/" + CONFIG.whatsapp : "https://wa.me/";
+  window.open(base + "?text=" + encodeURIComponent(msg), "_blank", "noopener");
+}
+
+/* Events */
+$("startBtn").addEventListener("click", () => {
+  const n = $("agentName").value.trim();
+  if (!n) { $("introMsg").textContent = "Ohne Namen kommst du nicht rein."; shake($("agentName")); return; }
+  S = fresh(); S.name = n; S.start = Date.now(); save();
+  show("game"); renderStage();
+});
+$("agentName").addEventListener("keydown", e => { if (e.key === "Enter") $("startBtn").click(); });
+$("passBtn").addEventListener("click", checkPass);
+$("passInput").addEventListener("keydown", e => { if (e.key === "Enter") checkPass(); });
+$("waBtn").addEventListener("click", sendWhatsApp);
+$("resetBtn").addEventListener("click", () => { try { localStorage.removeItem(STORE); } catch (e) {} S = fresh(); $("agentName").value = ""; show("intro"); });
+
+/* Start: gespeicherten Fortschritt wieder aufnehmen */
+(function init() {
+  const saved = load();
+  if (saved && saved.name && saved.start) {
+    S = Object.assign(fresh(), saved);
+    if (S.done) toDone();
+    else if (S.stage >= STAGES.length) toFinal();
+    else { show("game"); renderStage(); }
+  }
+})();
+</script>
+</body>
+</html>
