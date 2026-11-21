@@ -151,6 +151,12 @@
   .ticket dd { margin: 0; font-weight: 600; text-align: right; }
   .ticket .code { font-family: var(--display); font-size: 34px; letter-spacing: .3em; color: var(--burgundy); margin-top: 6px; }
 
+  .ticket .event { margin-top: 20px; padding-top: 18px; border-top: 2px dashed rgba(138,20,41,.4); }
+  .ticket .when { font-family: var(--display); font-weight: 700; font-size: clamp(28px, 8vw, 36px); color: var(--burgundy); line-height: 1.1; }
+  .ticket .where { margin-top: 4px; font-weight: 500; }
+  .ticket .event a { display: inline-block; margin-top: 4px; color: var(--burgundy); font-weight: 600; }
+  .ticket .dress { margin-top: 14px; font-family: var(--display); font-style: italic; font-size: 19px; color: #3a2a2e; }
+
   footer { text-align: center; color: var(--mute); font-size: 14px; margin-top: 34px; font-family: var(--display); font-style: italic; }
 
   @media (prefers-reduced-motion: reduce) {
@@ -206,10 +212,16 @@
       <div class="code" id="codeText"></div>
       <dl>
         <dt>Agent</dt><dd id="dName"></dd>
-        <dt>Lucky-Wissen</dt><dd id="dKnow"></dd>
+        <dt>Kiks-Wissen</dt><dd id="dKnow"></dd>
         <dt>Chips</dt><dd id="dChips"></dd>
         <dt>Zeit</dt><dd id="dTime"></dd>
       </dl>
+      <div class="event">
+        <div class="when">23.01. · 20 Uhr</div>
+        <div class="where">Sollnerstr. 6, 82049 Pullach</div>
+        <a href="https://www.google.com/maps/search/?api=1&amp;query=Sollnerstr.+6,+82049+Pullach" target="_blank" rel="noopener">Route in Google Maps</a>
+        <div class="dress">Dress to kill. Dance to thrill.</div>
+      </div>
     </div>
     <button class="primary" id="waBtn">Ergebnis an Lucky melden</button>
     <p class="meta" style="text-align:center;margin-top:14px">Das öffnet WhatsApp mit einer fertigen Nachricht. Am Eingang nennst du das Passwort.</p>
@@ -244,9 +256,8 @@ const STAGES = [
     intro: "Erste Prüfung. Wie gut kennst du " + CONFIG.host + " wirklich? Hier gibt es keine zweite Chance.",
     questions: [
       { q: "Was bestellt " + CONFIG.host + " am liebsten, wenn Comfort Food gegen den Kater gebraucht wird?", options: ["Pizza", "Ramen", "Sushi", "Pasta"], correct: 0 },
-      { q: "Auf einem normalen Würfel ergeben gegenüberliegende Seiten immer 7. Oben liegt die 2. Wie viele Punkte liegen unten?", options: ["3", "4", "5", "6"], correct: 2, scored: false, tag: "Escape-Rätsel" },
-      /* TODO: richtige Antwort bestätigen (correct = Index ab 0) */
-      { q: "Was bestellt " + CONFIG.host + " an der Bar, wenn es richtig klasse werden soll?", options: ["Whiskey Sour", "Aperol Sour", "Basil Smash", "Espresso Martini"], correct: 3 }
+      { q: "Ein Mann kommt an die Bar und bestellt ein Glas Wasser. Die Barkeeperin zieht eine Pistole und zielt auf ihn. Der Mann sagt „Danke“ und geht zufrieden. Warum?", options: ["Sein Schluckauf war weg", "Er war Undercover-Agent", "Die Pistole war aus Schokolade", "Er wollte nie Wasser, sondern Aufmerksamkeit"], correct: 0, scored: false, tag: "Escape-Rätsel" },
+      { q: "Was bestellt " + CONFIG.host + " an der Bar, wenn es richtig klasse werden soll?", options: ["Whiskey Sour", "Aperol Sour", "Basil Smash", "Espresso Martini"], correct: 0 }
     ]
   },
   {
@@ -258,10 +269,10 @@ const STAGES = [
   },
   {
     type: "text", letter: "Y", title: "Die Bildersprache",
-    intro: "Der Gegner kommuniziert nur noch in Symbolen. Drei Rätsel: zwei Filme und ein Bösewicht.",
+    intro: "Der Gegner kommuniziert nur noch in Symbolen. Drei Rätsel, drei Filme.",
     rounds: [
       { prompt: "Welcher Film versteckt sich hier?", puzzle: "🐀 👨‍🍳 🇫🇷", big: true, answers: ["ratatouille", "ratatui"], hint: "Eine Ratte kocht in Paris." },
-      { prompt: "Wer ist gemeint?", puzzle: "🃏 🤡", big: true, answers: ["joker", "derjoker"], hint: "Batmans Lieblingsgegner. Und eine Karte." },
+      { prompt: "Welcher Film versteckt sich hier? Der Titel hat vier Wörter.", puzzle: "🐑 🤐 🍷", big: true, answers: ["dasschweigenderlaemmer", "schweigenderlaemmer", "silenceofthelambs", "thesilenceofthelambs"], hint: "Anthony Hopkins spielt darin einen sehr kultivierten Menschenfreund. Mit Fava-Bohnen." },
       { prompt: "Welcher Bond-Film versteckt sich hier?", puzzle: "⌚ 🚫 ☠️", big: true, answers: ["keinezeitzusterben", "notimetodie", "keinezeit"], hint: "Daniel Craigs letzter Auftritt als 007. Der Titel ist ein Befehl an die Uhr." }
     ]
   },
@@ -271,8 +282,7 @@ const STAGES = [
     questions: [
       { q: "Was würde " + CONFIG.host + " niemals freiwillig essen?", options: ["Gebackene Bananen", "Spaghetti Carbonara", "Cacio e Pepe", "Pasta alla Vodka"], correct: 2 },
       { q: "Die größte Macke von " + CONFIG.host + " (eine von vielen)?", options: ["Unpünktlich", "Antwortet nie auf Nachrichten", "Isst von deinem Teller, ohne zu fragen", "Kann nicht Nein sagen"], correct: 0 },
-      /* TODO: viertes Lieblingswort und richtige Antwort eintragen */
-      { q: "Das Lieblingswort von " + CONFIG.host + "?", options: ["Wild", "Checke", "Safe", "Läuft"], correct: 0 }
+      { q: "Das Lieblingswort von " + CONFIG.host + "?", options: ["Wild", "Checke", "Spannend", "Safe"], correct: 2 }
     ]
   },
   {
@@ -532,7 +542,7 @@ function toDone() {
 
 function sendWhatsApp() {
   const msg = "🎰 Agent " + S.name + " meldet: Akte Lucky27 geöffnet.\n" +
-    "Lucky-Wissen: " + S.know + "/" + totalQ + "\n" +
+    "Kiks-Wissen: " + S.know + "/" + totalQ + "\n" +
     "Chips: " + S.chips + "\n" +
     "Zeit: " + fmtTime(S.end - S.start) + "\n" +
     "Passwort: " + CONFIG.password;
